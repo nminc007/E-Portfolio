@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My E-Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #333;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        body.about-theme {
+            background: linear-gradient(135deg, #0a4d5c 0%, #1a6b7a 50%, #2d4a3e 100%);
+        }
+
+        body.degree-theme {
+            background: linear-gradient(135deg, #0f1821 0%, #1e3a5f 50%, #2a4a6a 100%);
+        }
+
+        body.integration-theme {
+            background: linear-gradient(135deg, #0a1929 0%, #1a3a52 50%, #2a4a62 100%);
+        }
+
+        body.additions-theme {
+            background: linear-gradient(135deg, #2d1810 0%, #4a2c1a 50%, #6b4423 100%);
+        }
+
+        .animation-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .animation-canvas.active {
+            opacity: 1;
+        }
+
+        #matrix-canvas.active {
+            opacity: 0.7;
+        }
+
+        #snow-canvas.active {
+            opacity: 0.7;
+        }
+
+        #wave-canvas.active {
+            opacity: 0.8;
+        }
+
+        #leaves-canvas.active {
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+        }
+
+        header h1 {
+            font-size: 2.8em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+
+        header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+            font-style: italic;
+            text-align: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-bottom: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: -2px;
+        }
+
+        .nav-tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-tab.active {
+            background: rgba(30, 30, 35, 0.88);
+            font-weight: bold;
+            border-bottom: none;
+            z-index: 10;
+            box-shadow: none;
+            margin-bottom: -3px;
+        }
+
+        body.about-theme .nav-tab.active {
+            color: #4dd4ff;
+            background: rgba(20, 35, 40, 0.90);
+            border-color: #4dd4ff;
+        }
+
+        body.degree-theme .nav-tab.active {
+            color: #6a9ac4;
+            background: rgba(25, 35, 45, 0.90);
+            border-color: #6a9ac4;
+        }
+
+        body.additions-theme .nav-tab.active {
+            color: #d4a574;
+            background: rgba(35, 25, 20, 0.90);
+            border-color: #d4a574;
+        }
+
+        body.integration-theme .nav-tab.active {
+            color: #4dd4ff;
+            background: rgba(13, 2, 8, 0.92);
+            border-color: #4dd4ff;
+        }
+
+        .content-area {
+            background: rgba(30, 30, 35, 0.88);
+            border-radius: 0 8px 8px 8px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-height: 500px;
+            backdrop-filter: blur(10px);
+            color: #e8e8e8;
+            border: 3px solid rgba(0, 0, 0, 0.2);
+            margin-top: 0;
+        }
+
+        #about.active ~ .content-area {
+            background: rgba(20, 35, 40, 0.90);
+            border: 3px solid #4dd4ff;
+        }
+
+        body.degree-theme .content-area {
+            background: rgba(25, 35, 45, 0.90);
+            border: 3px solid #6a9ac4;
+            color: #e8e8e8;
+        }
+
+        body.integration-theme .content-area {
+            background: rgba(15, 25, 40, 0.92);
+            color: #d0e8ff;
+            border: 2px solid #4dd4ff;
+        }
+
+        body.integration-theme h2,
+        body.integration-theme h3 {
+            color: #4dd4ff;
+            text-shadow: 0 0 10px rgba(77, 212, 255, 0.5);
+        }
+
+        body.integration-theme p {
+            color: #d0e8ff;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .beach-image-container {
+            width: 100%;
+            height: 400px;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+            border: 3px solid #4dd4ff;
+        }
+
+        .beach-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .trading-setup-container {
+            width: 100%;
+            margin: 40px auto 0 auto;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+        }
+
+        .trading-setup-image {
+            max-width: 500px;
+            width: auto;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+            border: 3px solid #4dd4ff;
+            transform: rotate(-90deg);
+            object-fit: contain;
+        }
+
+        .degree-image-container {
+            width: 100%;
+            height: 350px;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(106, 154, 196, 0.4);
+            border: 3px solid #6a9ac4;
+        }
+
+        .degree-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        h2 {
+            color: #4dd4ff;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 3px solid #4dd4ff;
+            padding-bottom: 10px;
+        }
+
+        body.about-theme h2 {
+            color: #4dd4ff;
+            border-bottom-color: #4dd4ff;
+        }
+
+        body.degree-theme h2 {
+            color: #6a9ac4;
+            border-bottom-color: #6a9ac4;
+        }
+
+        body.additions-theme h2 {
+            color: #d4a574;
+            border-bottom-color: #d4a574;
+        }
+
+        body.integration-theme h2 {
+            color: #4dd4ff;
+            border-bottom-color: #4dd4ff;
+        }
+
+        h3 {
+            color: #5dccee;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        body.about-theme h3 {
+            color: #5dccee;
+        }
+
+        body.degree-theme h3 {
+            color: #8ab4d4;
+        }
+
+        body.additions-theme h3 {
+            color: #d4a574;
+        }
+
+        body.integration-theme h3 {
+            color: #4dd4ff;
+            text-shadow: 0 0 10px rgba(77, 212, 255, 0.5);
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+            line-height: 1.8;
+        }
+
+        .content-section {
+            margin-bottom: 40px;
+        }
+
+        sup {
+            font-size: 0.75em;
+            vertical-align: super;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            .nav-tab {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body class="about-theme">
+    <canvas id="matrix-canvas" class="animation-canvas"></canvas>
+    <canvas id="snow-canvas" class="animation-canvas"></canvas>
+    <canvas id="wave-canvas" class="animation-canvas"></canvas>
+    <canvas id="leaves-canvas" class="animation-canvas"></canvas>
+    
+    <div class="container">
+        <header>
+            <h1>Nicholas Jordan Mincu</h1>
+            <p>E-Portfolio</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('about')">About Me</button>
+            <button class="nav-tab" onclick="showTab('degree')">My Degree Plan</button>
+            <button class="nav-tab" onclick="showTab('additions')">Some Additions</button>
+            <button class="nav-tab" onclick="showTab('integration')">Interdisciplinary Integration</button>
+        </nav>
+
+        <div class="content-area">
+            <!-- About Me Tab -->
+            <div id="about" class="tab-content active">
+                <h2>About Me</h2>
+
+                <div class="beach-image-container">
+                    <img src="beach-surfboard.jpg" alt="Beach with Surfboard" class="beach-image" id="beachPhoto">
+                </div>
+
+                <div class="content-section">
+                    <p>
+                        My name is Nicholas Jordan Mincu. I'm a 19-year-old Romanian man, and I'm currently a communication student focused on learning how to understand, teach, and lead people effectively. Especially with the upcoming surge of artificial intelligence, I believe that traditional listening, persuasion, and leadership skills will become some of the most valuable abilities. The communication program's flexible electives also let me explore math and analytical subjects, which complement my interest in making cold, analytical decisions.
+                    </p>
+                    <p>
+                        I've always believed that money is the most powerful tool because of the way society is designed. As such, I want to learn skills that will help me generate wealth, whether under others or in a leadership position. This persuaded me to choose a broader program that allows me to study important financial and strategic skills. Another reason I pursue math electives is to strengthen my abilities in finance and strategy, which I apply in stock trading and business endeavors. I have been trading for over three years now, beginning by advising older friends from the United States on what stocks to invest in, receiving commissions in return.
+                    </p>
+                    <p>
+                        Since I already trade successfully and enjoy teaching peers about investing, my short-term goal is to formalize those skills and be paid to teach others sound investment practices. Ultimately, my goal is to create a stable, comfortable life with a wife, three kids, and possibly pets. I plan to achieve this through building businesses in developing countries, such as my home country of Romania. I also want to explore deeper meaning through religion, science, and philosophy in my own time. I'm excited and grateful for the chance to work on these skills and turn my ideas into practical outcomes for a happy and thoughtful life with family and friends.
+                    </p>
+                </div>
+
+                <div class="trading-setup-container">
+                    <img src="trading-setup.jpg" alt="My Trading Setup" class="trading-setup-image" id="tradingSetup">
+                </div>
+            </div>
+
+            <!-- My Degree Plan Tab -->
+            <div id="degree" class="tab-content">
+                <h2>My Degree Plan</h2>
+                
+                <div class="degree-image-container">
+                    <img src="winter-friends.jpg" alt="Winter Photo with Friends" class="degree-image" id="degreePhoto">
+                </div>
+                
+                <div class="content-section">
+                    <h3>Program Overview</h3>
+                    <p><strong>Name:</strong> Nicholas Jordan Mincu</p>
+                    <p><strong>Current Degree Program:</strong> Honours Bachelor of Communication</p>
+                    <p><strong>Intended Degree Program:</strong> Honours Bachelor of Commerce (Finance) with a Minor in Mathematics</p>
+                    <p><strong>Total Credits:</strong> 120</p>
+                    <p><strong>Elective Credits:</strong> 39 (9 remaining after minor requirements)</p>
+                    <p><strong>Minor Credits:</strong> 30</p>
+                    <p style="margin-top: 20px;">
+                        As a communication undergrad, after thorough consideration, I've made the decision to switch to commerce majoring in finance with a minor in mathematics. However, as I've taken some courses before I will list those first and create the new degree plan as a restart more or less.
+                    </p>
+                </div>
+
+                <div class="content-section">
+                    <h3>Three Disciplines</h3>
+                    <ul style="margin-left: 25px; line-height: 1.9;">
+                        <li><strong>Administration/Finance</strong></li>
+                        <li><strong>Economics</strong></li>
+                        <li><strong>Mathematics</strong></li>
+                    </ul>
+                </div>
+
+                <div class="content-section" style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 8px; border-left: 4px solid #6a9ac4;">
+                    <h3>Completed/Ongoing Courses</h3>
+                    
+                    <p style="margin-top: 20px;"><strong>Year 1 - Fall</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>PHI1101 – Reasoning and Critical Thinking</li>
+                        <li>PHI1102 – Moral Reasoning</li>
+                        <li>CMN1148 – Introduction to Organizational Communication</li>
+                        <li>CMN1160 – Introduction to Media Studies</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Year 1 - Winter</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ADM1101 – Business and Society</li>
+                        <li>ADM1100 – Introduction to Business</li>
+                        <li>ENG1100 – Workshop in Essay Writing</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Year 2 - Fall</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ENG1100 – Workshop in Essay Writing</li>
+                        <li>CMN1148 – Introduction to Organizational Communication</li>
+                        <li>AHL1100 – Building Your Interdisciplinary Degree</li>
+                        <li>ADM1305 – Mathematics for Business</li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h3>New Degree Plan</h3>
+                    
+                    <p style="margin-top: 20px;"><strong style="color: #8ab4d4; font-size: 1.2em;">Year 1</strong></p>
+                    
+                    <p style="margin-top: 15px;"><strong>Fall Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ECO1102 – Introduction to Macroeconomics</li>
+                        <li>ENG1131 – Effective Business English</li>
+                        <li>MAT1341 – Introduction to Linear Algebra</li>
+                        <li>MAT1320 – Calculus I</li>
+                        <li>ADM2336 – Organizational Behaviour</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Winter Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ADM1340 – Financial Accounting</li>
+                        <li>ADM1370 – Applications of Information Technology for Business</li>
+                        <li>ECO1104 – Introduction to Microeconomics</li>
+                        <li>MAT1322 – Calculus II</li>
+                        <li>ECO2142 – Macroeconomic Theory I</li>
+                    </ul>
+
+                    <p style="margin-top: 25px;"><strong style="color: #8ab4d4; font-size: 1.2em;">Year 2</strong></p>
+                    
+                    <p style="margin-top: 15px;"><strong>Fall Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ADM2303 – Statistics for Management</li>
+                        <li>ADM2350 – Financial Management</li>
+                        <li>ECO2144 – Microeconomic Theory I</li>
+                        <li>ADM2381 – Business Communication Skills</li>
+                        <li>MAT2371 – Introduction to Probability</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Winter Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ADM2304 – Statistics for Management</li>
+                        <li>ADM2352 – Finance Theory</li>
+                        <li>ADM2302 – Business Analytics</li>
+                        <li>ADM2320 – Marketing</li>
+                        <li>ADM2341 – Managerial Accounting</li>
+                    </ul>
+
+                    <p style="margin-top: 25px;"><strong style="color: #8ab4d4; font-size: 1.2em;">Year 3</strong></p>
+                    
+                    <p style="margin-top: 15px;"><strong>Fall Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ADM3351 – Fixed Income Investments</li>
+                        <li>ADM3352 – Portfolio Management</li>
+                        <li>ADM3350 – Corporate Finance</li>
+                        <li>MAT2322 – Calculus III for Engineers</li>
+                        <li>ADM3357 – Applied Investment Fund Management Module I</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Winter Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>ADM3318 – International Business</li>
+                        <li>ADM2337 – Human Resource Management</li>
+                        <li>ADM2372 – Management Information Systems</li>
+                        <li>ADM3301 – Operations Management</li>
+                        <li>MAT2342 – Introduction to Applied Linear Algebra</li>
+                    </ul>
+
+                    <p style="margin-top: 25px;"><strong style="color: #8ab4d4; font-size: 1.2em;">Year 4</strong></p>
+                    
+                    <p style="margin-top: 15px;"><strong>Fall Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>MAT3172 – Foundations of Probability</li>
+                        <li>MAT3375 – Regression Analysis</li>
+                        <li>ADM4350 – Equity Valuation</li>
+                        <li>ADM4351 – Options and Futures</li>
+                        <li>ADM4357 – Applied Investment Fund Management Module II</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Winter Semester</strong></p>
+                    <ul style="margin-left: 25px; line-height: 1.8;">
+                        <li>MAT3175 – Introduction to Mathematical Statistics</li>
+                        <li>ADM4356 – Alternative Investments and Risk Management</li>
+                        <li>MAT2375 – Introduction to Statistics</li>
+                        <li>ADM4311 – Strategic Management</li>
+                        <li>ADM4355 – Finance, Ethics and Social Responsibility</li>
+                    </ul>
+
+                    <p style="margin-top: 15px;"><strong>Summer:</strong> MFE Preparation</p>
+                </div>
+            </div>
+
+            <!-- Some Additions Tab -->
+            <div id="additions" class="tab-content">
+                <h2>Some Additions</h2>
+                
+                <div class="content-section">
+                    <p style="margin-bottom: 30px;">Here are some academic works I'm particularly proud of that showcase my interdisciplinary approach to finance, economics, and technology.</p>
+                </div>
+
+                <div class="content-section" style="background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 8px; border-left: 4px solid #d4a574; margin-bottom: 40px;">
+                    <h3 style="color: #d4a574;">The Need for Humans in Automated Markets: A Policy Perspective</h3>
+                    <p style="font-style: italic; margin-bottom: 20px;">AHL1100 Midterm - October 2025</p>
+                    
+                    <p>As the finance world evolves, the strategies to maximize profits grow equally as quickly. In modern quantitative finance, algorithms make up over 70% of U.S. equity trading volume, showing clear domination in global markets. Quant hedge funds largely depend on complex artificial intelligence models to predict trades and manage portfolios for maximization of profits. However, these models can often have hidden biases from their training data, which can cause unintended volatility in markets and even ethical concerns. A strong and recent example is the 2010 Flash Crash that wiped out nearly $1 trillion in market value from existence within minutes due to an algorithmic feedback loop. Combining the two disciplines of computer science and behavioral economics can strongly reduce algorithmic bias and help build fairer financial systems.</p>
+                </div>
+
+                <div class="content-section" style="background: rgba(255, 255, 255, 0.05); padding: 25px; border-radius: 8px; border-left: 4px solid #d4a574;">
+                    <h3 style="color: #d4a574;">Financial Literacy Education: Strengthening Canada's Middle Class and Economic Future</h3>
+                    <p style="font-style: italic; margin-bottom: 20px;">ENG1100 Final Paper - December 2025</p>
+                    
+                    <p>Most Canadians don't realize inflation acts like a hidden tax on people who hold cash. The money they hold dearly, although not dropping in amount, drops in value as the country creates more cash for itself. This misunderstanding that people often overlook shows us a clear issue, being widespread financial illiteracy in Canada, specifically within the middle class, keeping them there. Many Canadians struggle with saving, debt, and investing. All of which continue to weaken the Canadian middle class keeping the wider economy stagnant. Even worse, despite Canada being a well-developed country, it has a relatively low financial knowledge, shown by its stagnant growth. This is caused by the younger generations of people entering adulthood without skills in any form of finance. This low financial literacy not only has correlation but is a clear causation of poor saving, investment, and retirement planning because financial knowledge is human capital necessary for economic participation (Lusardi & Mitchell 2014). This paper argues that mandatory financial literacy education is essential because it helps individuals build strong lifelong habits, develop the skills needed for long-term financial success, and benefit from learning these skills early on in order to maximize their financial growth, stability, and well-being.</p>
+                </div>
+
+                <div class="content-section" style="margin-top: 50px; padding: 30px; background: rgba(212, 165, 116, 0.1); border-radius: 8px; border: 2px solid #d4a574; text-align: center;">
+                    <h3 style="color: #d4a574; margin-top: 0;">Contact Information</h3>
+                    <p style="margin-bottom: 10px; font-size: 1.1em;">
+                        <strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/nicholas-jordan-mincu" target="_blank" style="color: #d4a574; text-decoration: none; transition: all 0.3s ease;">www.linkedin.com/in/nicholas-jordan-mincu</a>
+                    </p>
+                    <p style="margin-bottom: 0; font-size: 1.1em;">
+                        <strong>Email:</strong> <a href="mailto:Nicholas.mincu@gmail.com" style="color: #d4a574; text-decoration: none; transition: all 0.3s ease;">Nicholas.mincu@gmail.com</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Interdisciplinary Integration Tab -->
+            <div id="integration" class="tab-content">
+                <h2>Interdisciplinary Integration</h2>
+                
+                <div class="content-section">
+                    <h3>Finance</h3>
+                    <p>
+                        Finance is the study of individuals, firms, and institutions allocating capital under uncertainty through the use of quantitative methods (portfolio theory, risk modelling), statistical inference, and empirical testing, mainly originating from economics and actuarial science, with more modern foundations in Markowitz (1952), Fama (1970), and Black-Scholes (1973). Finance helps provide structured and data-driven tools for evaluating investments through its strong–as previously mentioned–methodological framework, using modern portfolio theory, risk measurement, and diversification.<sup>1</sup> Allowing the creation of predictive models for pricing risk and returns; specifically, finance helps conceptualize markets as information-efficient, which means that the market is a perfect reflection of the information available to all the players in that market. It additionally helps optimize portfolios through diversification and risk-adjusted measurements, which are all directly practical and applicable in portfolio management.<sup>2</sup> However, with its many strengths, it's equally critical to note that models depend on assumptions in finance of rationality and normally distributed returns in an efficient market, creating blind spots around behavioural finance and market irrationality, which is a largely debated topic in finance.<sup>3</sup> The topic of market inefficiency versus market efficiency is the main separator of many quant traders searching for arbitrage to profit in the market. Additionally, there is a large overreliance on these models that can understate rare or extreme events, known as black swans, creating large losses and disproving otherwise profitable models. This can bring up the question of whether the market is even able to truly generate a profit, if it has directionality at all, or even if the market can be modelled altogether, all interesting topics on their own.<sup>4</sup>
+                    </p>
+                </div>
+
+                <div class="content-section">
+                    <h3>Economics</h3>
+                    <p>
+                        Economics is the study of scarcity, incentives, and the production and distribution of goods and services, using theoretical modelling, econometrics, policy analysis, and statistical inference<sup>5</sup> mainly rooted in classical thinkers (Smith, Ricardo) and modern macroeconomics (Keynes, Friedman). Economics has the ability to create a macro-level understanding, which is essential for financial forecasting, and it also provides frameworks for incentives, rational choice, and market equilibrium, all key concepts for a quantitative portfolio manager role.<sup>6</sup> Specifically, looking at econometrics, it provides powerful tools that allow for empirical prediction, which relies on real-world data and past observations to make forecasts instead of using purely theoretical models, helping gauge market values and fairness, or even forecasting future outcomes. While economics has powerful tools, it also has root problems, such as the overly simplified assumptions about rational behaviour, whereas the truth of the market is that psychological forces constantly disrupt macroeconomic predictions, weakening economics' credibility due to its reliance on rationality.<sup>7</sup> A more in-depth look at the problem would be the predictive models, which mainly rely on real-world data, as mathematical models are too theoretical, often failing under rapid structural change of the market, especially with the reality that these models are created based on historical data sets, which can only show what has happened and are not an indication of what will happen. With these major disagreements, different theoretical schools of economics lead to interpretive inconsistencies, creating an overall gap in credibility and reliability, as the entire study is an ununified front. Yet, its roots in society remain largely present, as it does have overall usage advantages for both the consumer and business worlds.
+                    </p>
+                </div>
+
+                <div class="content-section">
+                    <h3>Mathematics</h3>
+                    <p>
+                        Mathematics, the oldest and most fundamental of the three, is the study of patterns, structures, and quantitative relationships, using formal systems, proofs, modelling techniques, probability theory, and optimization in all categories, originating in classical geometry and calculus; modern applications include stochastic processes and numerical methods. Compared to the relatively simplistic models of finance and economics without mathematics, mathematics offers unparalleled rigor and precision for the modelling of these financial systems.<sup>8</sup> The foundation of quantitative finance is advanced mathematics for option pricing, stochastic calculus, optimization, and a central role in derivatives pricing.<sup>9</sup> With all of mathematics' uses in both finance and economics, as the foundation and structuring of most modern financial modelling<sup>10</sup>, it's equally important to note its universal applicability, as mathematics applies frameworks across many different jobs and contexts, allowing for it to be a highly interdisciplinary discipline. However, it's essential to note that the abstraction of mathematical models can also remove real-world detail or behavioural nuance, like with the assumption that the market is completely rational in the efficient market hypothesis, creating limitations of models under extreme market conditions<sup>11</sup> where, in events like the 2008 market crash, the pricing was completely imbalanced due to the fear factor of the stock market dropping so drastically. The models created by mathematics can often oversimplify discontinuities or tail events, which are the main cause of losses for systems, disproving their profitability and disagreeing with finance's heavy model dependence.<sup>12</sup> Additionally, mathematics is a much more technically and mentally demanding discipline, requiring high technical skill, making it less accessible to the general populace compared to finance and economics.
+                    </p>
+                </div>
+
+                <div class="content-section">
+                    <h3>Integration Synthesis</h3>
+                    <p>
+                        Through these three disciplines, a final integrative, interdisciplinary synthesis shows how finance, economics, and mathematics create one combined analytical lens, allowing them to tie their strengths together and avoid their individual weaknesses. An integration of finance with economics is crucial as economics explains macroeconomic conditions, incentives, and market structure –all powerful, decisive tools for finance, which converts these insights into actual investment decisions, producing profits from theory and application. Together, they strengthen both forecasting and strategic planning. Finance relies heavily on mathematics, as it applies the tools mathematics provides, all the while finance applies them to real-world data. Quantitative models, a benchmark in the finance industry, require optimization, calculus, and probability –all of which are tools provided by mathematics. Simply put, their integration is foundational, as without math, finance would not be able to produce risk models or even pricing formulas, creating a clear visual that mathematics is a required integration for finance. Economics also needs the integration of mathematics, as econometrics and statistical modelling merge theory from both mathematics and economics with quantitative validation, allowing for a mathematical measure of success in an otherwise probabilistic market. While economic insights are powerful predictive tools, without mathematics, they are simply stabs at a much larger problem, proving mathematics' high usage rate in strengthening the precision of economic insights. For future quantitative portfolio managers, it is essential to have mathematically rigorous modelling of finance, the macro-structural understanding from economics, and the theoretical foundations of mathematics. The interdisciplinarity of the three allows for the prevention of narrow thinking and relying solely on one over the other, concluding that the combined power forms a unique advantage of holistic market interpretation, forecast accuracy, and strategic uncertainty management.
+                    </p>
+                </div>
+
+                <hr style="border: none; border-top: 3px solid #4dd4ff; margin: 60px 0 40px 0; box-shadow: 0 0 10px #4dd4ff;">
+
+                <div class="content-section">
+                    <h3 style="color: #4dd4ff !important; text-shadow: 0 0 15px rgba(77, 212, 255, 0.5) !important; font-size: 1.8em !important; margin-bottom: 30px;">Footnotes</h3>
+                    <div style="margin-left: 25px; padding: 20px; background: rgba(77, 212, 255, 0.05); border-left: 4px solid #4dd4ff; border-radius: 4px;">
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>1</sup> Bodie, Zvi, Alex Kane, and Alan J. Marcus. <i>Investments.</i> 10th ed. New York: McGraw-Hill, 2013.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>2</sup> Fama, Eugene F. "Efficient Capital Markets: A Review of Theory and Empirical Work." <i>Journal of Finance</i> 25, no. 2 (1970): 383–417.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>3</sup> Ibid.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>4</sup> Bodie et al., <i>Investments.</i></p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>5</sup> Mankiw, N. Gregory. <i>Principles of Economics.</i> 9th ed. Boston: Cengage Learning, 2021.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>6</sup> Ibid.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>7</sup> Akerlof, George A., and Robert J. Shiller. <i>Animal Spirits: How Human Psychology Drives the Economy.</i> Princeton: Princeton University Press, 2009.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>8</sup> Shreve, Steven E. <i>Stochastic Calculus for Finance I: The Binomial Asset Pricing Model.</i> New York: Springer, 2004.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>9</sup> Hull, John C. <i>Options, Futures, and Other Derivatives.</i> 11th ed. London: Pearson, 2023.</p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>10</sup> Shreve, Steven E. <i>Stochastic Calculus for Finance I.</i></p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>11</sup> Hull, John C. <i>Options, Futures, and Other Derivatives.</i></p>
+                        
+                        <p style="font-size: 0.95em; line-height: 1.9; margin-bottom: 14px; color: #d0e8ff !important;"><sup>12</sup> Ibid.</p>
+                    </div>
+                </div>
+
+                <hr style="border: none; border-top: 3px solid #4dd4ff; margin: 60px 0 40px 0; box-shadow: 0 0 10px #4dd4ff;">
+                <div class="content-section">
+                    <h3 style="color: #4dd4ff !important; text-shadow: 0 0 15px rgba(77, 212, 255, 0.5) !important; font-size: 1.8em !important; margin-bottom: 30px;">Bibliography</h3>
+                    <div style="margin-left: 25px; padding: 20px; background: rgba(77, 212, 255, 0.05); border-left: 4px solid #4dd4ff; border-radius: 4px;">
+                        <p style="margin-bottom: 14px; color: #d0e8ff !important;">Akerlof, George A., and Robert J. Shiller. <i>Animal Spirits: How Human Psychology Drives the Economy.</i> Princeton: Princeton University Press, 2009.</p>
+                        
+                        <p style="margin-bottom: 14px; color: #d0e8ff !important;">Bodie, Zvi, Alex Kane, and Alan J. Marcus. <i>Investments.</i> 10th ed. New York: McGraw-Hill, 2013.</p>
+                        
+                        <p style="margin-bottom: 14px; color: #d0e8ff !important;">Fama, Eugene F. "Efficient Capital Markets: A Review of Theory and Empirical Work." <i>Journal of Finance</i> 25, no. 2 (1970): 383–417.</p>
+                        
+                        <p style="margin-bottom: 14px; color: #d0e8ff !important;">Hull, John C. <i>Options, Futures, and Other Derivatives.</i> 11th ed. London: Pearson, 2023.</p>
+                        
+                        <p style="margin-bottom: 14px; color: #d0e8ff !important;">Mankiw, N. Gregory. <i>Principles of Economics.</i> 9th ed. Boston: Cengage Learning, 2021.</p>
+                        
+                        <p style="margin-bottom: 14px; color: #d0e8ff !important;">Shreve, Steven E. <i>Stochastic Calculus for Finance I: The Binomial Asset Pricing Model.</i> New York: Springer, 2004.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rainCanvas = document.getElementById('matrix-canvas');
+        const rainCtx = rainCanvas.getContext('2d');
+        rainCanvas.width = window.innerWidth;
+        rainCanvas.height = window.innerHeight;
+        const raindrops = [];
+        const raindropCount = 150;
+
+        class Raindrop {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * rainCanvas.width;
+                this.y = Math.random() * -rainCanvas.height;
+                this.length = Math.random() * 20 + 10;
+                this.speed = Math.random() * 8 + 6;
+                this.opacity = Math.random() * 0.5 + 0.3;
+            }
+            update() {
+                this.y += this.speed;
+                if (this.y > rainCanvas.height) this.reset();
+            }
+            draw() {
+                rainCtx.beginPath();
+                rainCtx.moveTo(this.x, this.y);
+                rainCtx.lineTo(this.x, this.y + this.length);
+                rainCtx.strokeStyle = `rgba(77, 212, 255, ${this.opacity})`;
+                rainCtx.lineWidth = 1.5;
+                rainCtx.stroke();
+            }
+        }
+
+        for (let i = 0; i < raindropCount; i++) raindrops.push(new Raindrop());
+
+        let rainAnimationId;
+        function animateRain() {
+            rainCtx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+            raindrops.forEach(r => { r.update(); r.draw(); });
+            rainAnimationId = requestAnimationFrame(animateRain);
+        }
+        function startRain() {
+            if (!rainAnimationId) {
+                animateRain();
+                rainCanvas.classList.add('active');
+            }
+        }
+        function stopRain() {
+            if (rainAnimationId) {
+                cancelAnimationFrame(rainAnimationId);
+                rainAnimationId = null;
+                rainCanvas.classList.remove('active');
+                rainCtx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+            }
+        }
+
+        const snowCanvas = document.getElementById('snow-canvas');
+        const snowCtx = snowCanvas.getContext('2d');
+        snowCanvas.width = window.innerWidth;
+        snowCanvas.height = window.innerHeight;
+        const snowflakes = [];
+        const snowflakeCount = 50;
+
+        class Snowflake {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * snowCanvas.width;
+                this.y = Math.random() * -snowCanvas.height;
+                this.radius = Math.random() * 3 + 1;
+                this.speed = Math.random() * 1 + 0.5;
+                this.wind = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.3;
+            }
+            update() {
+                this.y += this.speed;
+                this.x += this.wind;
+                if (this.y > snowCanvas.height) this.reset();
+                if (this.x > snowCanvas.width) this.x = 0;
+                else if (this.x < 0) this.x = snowCanvas.width;
+            }
+            draw() {
+                snowCtx.beginPath();
+                snowCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                snowCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                snowCtx.fill();
+            }
+        }
+
+        for (let i = 0; i < snowflakeCount; i++) snowflakes.push(new Snowflake());
+
+        let snowAnimationId;
+        function animateSnow() {
+            snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+            snowflakes.forEach(s => { s.update(); s.draw(); });
+            snowAnimationId = requestAnimationFrame(animateSnow);
+        }
+        function startSnow() {
+            if (!snowAnimationId) {
+                animateSnow();
+                snowCanvas.classList.add('active');
+            }
+        }
+        function stopSnow() {
+            if (snowAnimationId) {
+                cancelAnimationFrame(snowAnimationId);
+                snowAnimationId = null;
+                snowCanvas.classList.remove('active');
+                snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+            }
+        }
+
+        const waveCanvas = document.getElementById('wave-canvas');
+        const waveCtx = waveCanvas.getContext('2d');
+        waveCanvas.width = window.innerWidth;
+        waveCanvas.height = window.innerHeight;
+        let waveOffset = 0;
+        const waveSpeed = 2;
+
+        function drawWaves() {
+            waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+            const sandGradient = waveCtx.createLinearGradient(0, waveCanvas.height * 0.35, 0, waveCanvas.height);
+            sandGradient.addColorStop(0, 'rgba(220, 200, 150, 0.3)');
+            sandGradient.addColorStop(0.5, 'rgba(194, 178, 128, 0.35)');
+            sandGradient.addColorStop(1, 'rgba(170, 154, 108, 0.4)');
+            waveCtx.fillStyle = sandGradient;
+            waveCtx.fillRect(0, waveCanvas.height * 0.35, waveCanvas.width, waveCanvas.height * 0.65);
+            const waterGradient = waveCtx.createLinearGradient(0, 0, 0, waveCanvas.height * 0.35);
+            waterGradient.addColorStop(0, 'rgba(0, 100, 160, 0.4)');
+            waterGradient.addColorStop(0.6, 'rgba(0, 130, 190, 0.35)');
+            waterGradient.addColorStop(1, 'rgba(50, 170, 220, 0.3)');
+            waveCtx.fillStyle = waterGradient;
+            waveCtx.fillRect(0, 0, waveCanvas.width, waveCanvas.height * 0.35);
+            const waveLines = [
+                { yStart: 0.15, amplitude: 12, frequency: 0.006, speed: 1.2, opacity: 0.25, foamOpacity: 0.35 },
+                { yStart: 0.20, amplitude: 15, frequency: 0.007, speed: 1.0, opacity: 0.22, foamOpacity: 0.30 },
+                { yStart: 0.25, amplitude: 18, frequency: 0.008, speed: 0.9, opacity: 0.20, foamOpacity: 0.25 },
+                { yStart: 0.30, amplitude: 20, frequency: 0.009, speed: 0.8, opacity: 0.18, foamOpacity: 0.20 },
+                { yStart: 0.35, amplitude: 22, frequency: 0.010, speed: 0.7, opacity: 0.15, foamOpacity: 0.15 }
+            ];
+            waveLines.forEach(wave => {
+                waveCtx.beginPath();
+                const baseY = waveCanvas.height * wave.yStart;
+                waveCtx.moveTo(0, baseY);
+                for (let x = 0; x <= waveCanvas.width; x += 8) {
+                    const y = baseY + Math.sin((x * wave.frequency) + (waveOffset * wave.speed * 0.02)) * wave.amplitude;
+                    waveCtx.lineTo(x, y);
+                }
+                waveCtx.lineTo(waveCanvas.width, waveCanvas.height);
+                waveCtx.lineTo(0, waveCanvas.height);
+                waveCtx.closePath();
+                waveCtx.fillStyle = `rgba(180, 220, 240, ${wave.opacity})`;
+                waveCtx.fill();
+                waveCtx.beginPath();
+                waveCtx.moveTo(0, baseY);
+                for (let x = 0; x <= waveCanvas.width; x += 8) {
+                    const y = baseY + Math.sin((x * wave.frequency) + (waveOffset * wave.speed * 0.02)) * wave.amplitude;
+                    waveCtx.lineTo(x, y);
+                }
+                waveCtx.strokeStyle = `rgba(255, 255, 255, ${wave.foamOpacity})`;
+                waveCtx.lineWidth = 2.5;
+                waveCtx.stroke();
+            });
+            for (let i = 0; i < 3; i++) {
+                const foamY = waveCanvas.height * (0.38 + i * 0.08);
+                waveCtx.beginPath();
+                for (let x = 0; x <= waveCanvas.width; x += 12) {
+                    const offset = Math.sin(x * 0.008 + waveOffset * 0.015 + i * 1.5) * 6;
+                    if (x === 0) waveCtx.moveTo(x, foamY + offset);
+                    else waveCtx.lineTo(x, foamY + offset);
+                }
+                waveCtx.strokeStyle = `rgba(255, 255, 255, ${0.12 - i * 0.03})`;
+                waveCtx.lineWidth = 2;
+                waveCtx.stroke();
+            }
+            waveOffset += waveSpeed;
+        }
+
+        let waveAnimationId;
+        function animateWaves() {
+            drawWaves();
+            waveAnimationId = requestAnimationFrame(animateWaves);
+        }
+        function startWaves() {
+            if (!waveAnimationId) {
+                animateWaves();
+                waveCanvas.classList.add('active');
+            }
+        }
+        function stopWaves() {
+            if (waveAnimationId) {
+                cancelAnimationFrame(waveAnimationId);
+                waveAnimationId = null;
+                waveCanvas.classList.remove('active');
+                waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+                waveOffset = 0;
+            }
+        }
+
+        const leavesCanvas = document.getElementById('leaves-canvas');
+        const leavesCtx = leavesCanvas.getContext('2d');
+        leavesCanvas.width = window.innerWidth;
+        leavesCanvas.height = window.innerHeight;
+        const leaves = [];
+        const leafCount = 40;
+        const leafColors = [
+            { r: 212, g: 165, b: 116 }, { r: 184, g: 115, b: 51 }, { r: 156, g: 85, b: 46 },
+            { r: 218, g: 165, b: 32 }, { r: 205, g: 133, b: 63 }, { r: 160, g: 82, b: 45 }
+        ];
+
+        class Leaf {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * leavesCanvas.height;
+            }
+            reset() {
+                this.x = Math.random() * leavesCanvas.width;
+                this.y = Math.random() * -100;
+                this.width = Math.random() * 15 + 10;
+                this.height = this.width * 1.5;
+                this.speed = Math.random() * 1 + 0.5;
+                this.swaySpeed = Math.random() * 0.02 + 0.01;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.03;
+                this.color = leafColors[Math.floor(Math.random() * leafColors.length)];
+                this.opacity = Math.random() * 0.4 + 0.4;
+            }
+            update(time) {
+                this.y += this.speed;
+                this.x += Math.sin(time * this.swaySpeed) * 0.5;
+                this.rotation += this.rotationSpeed;
+                if (this.y > leavesCanvas.height) this.reset();
+            }
+            draw() {
+                leavesCtx.save();
+                leavesCtx.translate(this.x, this.y);
+                leavesCtx.rotate(this.rotation);
+                leavesCtx.beginPath();
+                leavesCtx.ellipse(0, 0, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+                leavesCtx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`;
+                leavesCtx.fill();
+                leavesCtx.restore();
+            }
+        }
+
+        for (let i = 0; i < leafCount; i++) leaves.push(new Leaf());
+        let leafTime = 0;
+
+        let leavesAnimationId;
+        function animateLeaves() {
+            leavesCtx.clearRect(0, 0, leavesCanvas.width, leavesCanvas.height);
+            leafTime++;
+            leaves.forEach(l => { l.update(leafTime); l.draw(); });
+            leavesAnimationId = requestAnimationFrame(animateLeaves);
+        }
+        function startLeaves() {
+            if (!leavesAnimationId) {
+                animateLeaves();
+                leavesCanvas.classList.add('active');
+            }
+        }
+        function stopLeaves() {
+            if (leavesAnimationId) {
+                cancelAnimationFrame(leavesAnimationId);
+                leavesAnimationId = null;
+                leavesCanvas.classList.remove('active');
+                leavesCtx.clearRect(0, 0, leavesCanvas.width, leavesCanvas.height);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            rainCanvas.width = window.innerWidth;
+            rainCanvas.height = window.innerHeight;
+            snowCanvas.width = window.innerWidth;
+            snowCanvas.height = window.innerHeight;
+            waveCanvas.width = window.innerWidth;
+            waveCanvas.height = window.innerHeight;
+            leavesCanvas.width = window.innerWidth;
+            leavesCanvas.height = window.innerHeight;
+        });
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            document.body.className = '';
+            stopRain(); stopSnow(); stopWaves(); stopLeaves();
+            if (tabName === 'about') {
+                document.body.classList.add('about-theme');
+                startWaves();
+            } else if (tabName === 'degree') {
+                document.body.classList.add('degree-theme');
+                startSnow();
+            } else if (tabName === 'additions') {
+                document.body.classList.add('additions-theme');
+                startLeaves();
+            } else if (tabName === 'integration') {
+                document.body.classList.add('integration-theme');
+                startRain();
+            }
+            document.querySelector('.content-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        window.addEventListener('load', () => startWaves());
+    </script>
+</body>
+</html>
